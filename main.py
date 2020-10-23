@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import pathlib
+from typing import List
 from urllib.parse import urljoin
 
 import requests
@@ -20,6 +21,12 @@ def extract_book_header(soup: BeautifulSoup) -> (str, str):
 def extract_book_image(soup: BeautifulSoup) -> str:
     img = soup.select_one('div.bookimage img')
     return img['src']
+
+
+def extract_book_comments(soup: BeautifulSoup) -> List[str]:
+    divs = soup.select('div.texts')
+    return [div.select_one('span.black').text for div in divs
+            if div.select_one('span.black')]
 
 
 def combine_path(filename: str, path: str, extension: str = None):
@@ -59,6 +66,9 @@ def download_page(book_url: BookUrl) -> BookInfo:
     image_part_url = extract_book_image(soup)
 
     image_url = urljoin(book_url.page, image_part_url)
+
+    comments = extract_book_comments(soup)
+    print(comments)
 
     return BookInfo(book_name.strip(), book_author.strip(), book_url, image_url)
 
