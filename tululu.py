@@ -6,8 +6,8 @@ from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
-from pathvalidate import sanitize_filename
 from requests import HTTPError
+from pathvalidate import sanitize_filename
 
 from helper import BookUrl, BookInfo
 from config import PATH_DOWNLOADS, HEADER_SEPARATOR, IMAGES_DOWNLOADS
@@ -63,7 +63,7 @@ def download_file(url: str, filename: str, path: str, extension: str = None):
     print(f'downloaded file: {filepath}')
 
 
-def download_page(book_url: BookUrl) -> BookInfo:
+def download_book_page(book_url: BookUrl) -> BookInfo:
     response = make_request(book_url.page)
 
     soup = BeautifulSoup(response.text, 'lxml')
@@ -97,7 +97,7 @@ def main():
         book_url = BookUrl(no)
         try:
             print(f'\ntry lookup book: {book_url.page}')
-            book_info = download_page(book_url)
+            book_info = download_book_page(book_url)
             print(f'download book: {book_url.file}')
             download_file(book_info.book_url.file, book_info.make_book_name(), PATH_DOWNLOADS, 'txt')
             print(f'download image: {book_info.image_url}')
