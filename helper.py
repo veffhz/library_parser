@@ -16,11 +16,16 @@ class BookInfo:
     author: str
     name: str
     book_url: BookUrl
+    image_url: str
 
-    def __init__(self, name: str, author: str, book_url: BookUrl) -> None:
+    def __init__(self, name: str, author: str, book_url: BookUrl, image_url: str) -> None:
         self.name = name
         self.author = author
         self.book_url = book_url
+        self.image_url = image_url
 
-    def make_book_name(self):
+    def make_book_name(self) -> str:
         return f'{self.book_url.book_id}. {self.name}'
+
+    def make_image_name(self) -> str:
+        return self.image_url.split('/')[-1]
