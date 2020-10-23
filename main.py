@@ -23,6 +23,11 @@ def extract_book_image(soup: BeautifulSoup) -> str:
     return img['src']
 
 
+def extract_book_genre(soup: BeautifulSoup) -> str:
+    a = soup.select_one('span.d_book a')
+    return a.text
+
+
 def extract_book_comments(soup: BeautifulSoup) -> List[str]:
     divs = soup.select('div.texts')
     return [div.select_one('span.black').text for div in divs
@@ -68,9 +73,14 @@ def download_page(book_url: BookUrl) -> BookInfo:
     image_url = urljoin(book_url.page, image_part_url)
 
     comments = extract_book_comments(soup)
-    print(comments)
+    genre = extract_book_genre(soup)
 
-    return BookInfo(book_name.strip(), book_author.strip(), book_url, image_url)
+    return BookInfo(
+        book_name.strip(),
+        book_author.strip(),
+        book_url,
+        image_url
+    )
 
 
 def prepare_dirs():
