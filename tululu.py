@@ -41,29 +41,30 @@ def combine_path(filename: str, path: str, extension: str = None):
     return pathlib.PurePath(path, f'{valid_filename}')
 
 
-def download_file(url: str, filename: str, path: str, extension: str = None):
+def make_request(url):
     response = requests.get(url, allow_redirects=False)
     response.raise_for_status()
 
     if response.is_redirect or response.is_permanent_redirect:
-        print(f'redirect found: code {response.status_code}, stop.\n', )
+        print(f'redirect found: code {response.status_code}, stop.', )
         raise RuntimeError()
+
+    return response
+
+
+def download_file(url: str, filename: str, path: str, extension: str = None):
+    response = make_request(url)
 
     filepath = combine_path(filename, path, extension)
 
     with open(filepath, 'wb') as file:
         file.write(response.content)
 
-    print(f'download file: {filepath}')
+    print(f'downloaded file: {filepath}')
 
 
 def download_page(book_url: BookUrl) -> BookInfo:
-    response = requests.get(book_url.page, allow_redirects=False)
-    response.raise_for_status()
-
-    if response.is_redirect or response.is_permanent_redirect:
-        print(f'redirect found: code {response.status_code}, stop.', )
-        raise RuntimeError()
+    response = make_request(book_url.page)
 
     soup = BeautifulSoup(response.text, 'lxml')
 
@@ -94,14 +95,13 @@ def main():
 
     for no in range(1, 11):
         book_url = BookUrl(no)
-        print(f'try lookup book: {book_url.page}')
         try:
+            print(f'\ntry lookup book: {book_url.page}')
             book_info = download_page(book_url)
-            print(f'try download book: {book_url.page}')
+            print(f'download book: {book_url.file}')
             download_file(book_info.book_url.file, book_info.make_book_name(), PATH_DOWNLOADS, 'txt')
-            print(f'try download image: {book_info.make_image_name()}')
+            print(f'download image: {book_info.image_url}')
             download_file(book_info.image_url, book_info.make_image_name(), IMAGES_DOWNLOADS)
-            print(f'go next\n')
         except (HTTPError, RuntimeError) as e:
             print(e)
 
