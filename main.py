@@ -3,46 +3,65 @@ import os
 import pathlib
 
 import requests
+from bs4 import BeautifulSoup
+from pathvalidate import sanitize_filename
+from requests import HTTPError
 
-from config import PATH_DOWNLOADS, BOOK_DOWNLOAD_URL, BASE_URL
-
-
-def extract_filename(header):
-    return header.split("filename=")[1].split('"')[1]
-
-
-def combine_path(filename):
-    return pathlib.PurePath(PATH_DOWNLOADS, filename)
+from helper import BookUrl, BookInfo
+from config import PATH_DOWNLOADS, HEADER_SEPARATOR
 
 
-def download_file(url):
-    response = requests.get(url, allow_redirects=False)
+def extract_book_header(text: str) -> (str, str):
+    soup = BeautifulSoup(text, 'lxml')
+    h1 = soup.select_one('div#content>h1')
+    return h1.text.split(HEADER_SEPARATOR)
+
+
+def combine_path(filename, path):
+    valid_filename = sanitize_filename(filename)
+    return pathlib.PurePath(path, f'{valid_filename}.txt')
+
+
+def download_txt(book_info: BookInfo):
+    response = requests.get(book_info.book_url.file, allow_redirects=False)
     response.raise_for_status()
 
     if response.is_redirect or response.is_permanent_redirect:
         print(f'redirect found: code {response.status_code}, stop.\n', )
-        return
+        raise RuntimeError()
 
-    os.makedirs(PATH_DOWNLOADS, exist_ok=True)
+    filepath = combine_path(book_info.make_book_name(), PATH_DOWNLOADS)
 
-    filename = extract_filename(response.headers.get("Content-Disposition"))
-    path = combine_path(filename)
-
-    with open(path, 'wb') as file:
+    with open(filepath, 'wb') as file:
         file.write(response.content)
 
     print('done\n')
 
 
-def make_url(next_id):
-    return BOOK_DOWNLOAD_URL.format(BASE_URL, next_id)
+def download_page(book_url: BookUrl) -> BookInfo:
+    response = requests.get(book_url.page, allow_redirects=False)
+    response.raise_for_status()
+
+    if response.is_redirect or response.is_permanent_redirect:
+        print(f'redirect found: code {response.status_code}, stop.\n', )
+        raise RuntimeError()
+
+    book_name, book_author = extract_book_header(response.text)
+    return BookInfo(book_name.strip(), book_author.strip(), book_url)
 
 
 def main():
+    print(f'create download dir {PATH_DOWNLOADS} if not exist\n')
+    os.makedirs(PATH_DOWNLOADS, exist_ok=True)
+
     for no in range(1, 11):
-        url = make_url(no)
-        print(f'try download book: {url}')
-        download_file(url)
+        book_url = BookUrl(no)
+        print(f'try lookup book: {book_url.page}')
+        try:
+            book_info = download_page(book_url)
+            download_txt(book_info)
+        except (HTTPError, RuntimeError) as e:
+            print(e)
 
 
 if __name__ == '__main__':

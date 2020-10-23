@@ -1,2 +1,5 @@
 flake8==3.8.4
 requests==2.24.0
+BeautifulSoup4
+lxml
+pathvalidate
