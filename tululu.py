@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import json
 import pathlib
 from typing import List
 from urllib.parse import urljoin
@@ -10,7 +11,8 @@ from requests import HTTPError
 from pathvalidate import sanitize_filename
 
 from helper import BookUrl, BookInfo
-from config import PATH_DOWNLOADS, HEADER_SEPARATOR, IMAGES_DOWNLOADS
+from config import BOOK_PATH_DOWNLOADS, HEADER_SEPARATOR
+from config import IMAGE_PATH_DOWNLOADS, EXPORT_FILENAME
 
 
 def extract_book_header(soup: BeautifulSoup) -> (str, str):
@@ -23,9 +25,9 @@ def extract_book_image(soup: BeautifulSoup) -> str:
     return img['src']
 
 
-def extract_book_genre(soup: BeautifulSoup) -> str:
-    a = soup.select_one('span.d_book a')
-    return a.text
+def extract_book_genres(soup: BeautifulSoup) -> List[str]:
+    a_tags = soup.select('span.d_book a')
+    return [a.text for a in a_tags]
 
 
 def extract_book_comments(soup: BeautifulSoup) -> List[str]:
@@ -55,12 +57,13 @@ def make_request(url):
 def download_file(url: str, filename: str, path: str, extension: str = None):
     response = make_request(url)
 
-    filepath = combine_path(filename, path, extension)
+    book_path = combine_path(filename, path, extension)
 
-    with open(filepath, 'wb') as file:
+    with open(book_path, 'wb') as file:
         file.write(response.content)
 
-    print(f'downloaded file: {filepath}')
+    print(f'downloaded file: {book_path}')
+    return book_path
 
 
 def download_book_page(book_url: BookUrl) -> BookInfo:
@@ -74,36 +77,73 @@ def download_book_page(book_url: BookUrl) -> BookInfo:
     image_url = urljoin(book_url.page, image_part_url)
 
     comments = extract_book_comments(soup)
-    genre = extract_book_genre(soup)
+    genres = extract_book_genres(soup)
 
     return BookInfo(
         book_name.strip(),
         book_author.strip(),
         book_url,
-        image_url
+        image_url,
+        comments,
+        genres
     )
 
 
 def prepare_dirs():
     print(f'create download dirs if not exist\n')
-    os.makedirs(PATH_DOWNLOADS, exist_ok=True)
-    os.makedirs(IMAGES_DOWNLOADS, exist_ok=True)
+    os.makedirs(BOOK_PATH_DOWNLOADS, exist_ok=True)
+    os.makedirs(IMAGE_PATH_DOWNLOADS, exist_ok=True)
+
+
+def save_file(books_info: List[dict]):
+    with open(EXPORT_FILENAME, 'w') as export_file:
+        json.dump(books_info, export_file, ensure_ascii=False, indent=4)
+
+
+def serialize_book_info(book_info: BookInfo, book_path: str, img_src: str) -> dict:
+    return {
+        'title': book_info.name,
+        'author': book_info.author,
+        'img_src': img_src,
+        'book_path': book_path,
+        'comments': book_info.comments,
+        'genres': book_info.genres,
+    }
 
 
 def main():
     prepare_dirs()
 
+    books_info = list()
+
     for no in range(1, 11):
         book_url = BookUrl(no)
         try:
             print(f'\ntry lookup book: {book_url.page}')
+
             book_info = download_book_page(book_url)
+
             print(f'download book: {book_url.file}')
-            download_file(book_info.book_url.file, book_info.make_book_name(), PATH_DOWNLOADS, 'txt')
+
+            book_path = download_file(
+                book_info.book_url.file, book_info.make_book_name(), BOOK_PATH_DOWNLOADS, 'txt'
+            )
+
             print(f'download image: {book_info.image_url}')
-            download_file(book_info.image_url, book_info.make_image_name(), IMAGES_DOWNLOADS)
+
+            img_src = download_file(
+                book_info.image_url, book_info.make_image_name(), IMAGE_PATH_DOWNLOADS
+            )
+
+            serialized_book = serialize_book_info(
+                book_info, str(book_path), str(img_src)
+            )
+            books_info.append(serialized_book)
+
         except (HTTPError, RuntimeError) as e:
             print(e)
+
+        save_file(books_info)
 
 
 if __name__ == '__main__':

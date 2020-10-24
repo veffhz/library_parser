@@ -1,3 +1,5 @@
+from typing import List
+
 from config import BOOK_DOWNLOAD_URL, BASE_URL, BOOK_URL
 
 
@@ -17,12 +19,17 @@ class BookInfo:
     name: str
     book_url: BookUrl
     image_url: str
+    comments: List[str]
+    genres: List[str]
 
-    def __init__(self, name: str, author: str, book_url: BookUrl, image_url: str) -> None:
+    def __init__(self, name: str, author: str, book_url: BookUrl,
+                 image_url: str, comments: List[str], genres: List[str]) -> None:
         self.name = name
         self.author = author
         self.book_url = book_url
         self.image_url = image_url
+        self.comments = comments
+        self.genres = genres
 
     def make_book_name(self) -> str:
         return f'{self.book_url.book_id}. {self.name}'
