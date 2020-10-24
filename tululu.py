@@ -111,12 +111,10 @@ def serialize_book_info(book_info: BookInfo, book_path: str, img_src: str) -> di
     }
 
 
-def main():
-    prepare_dirs()
-
+def work_loop(ids):
     books_info = list()
 
-    for no in range(1, 11):
+    for no in ids:
         book_url = BookUrl(no)
         try:
             print(f'\ntry lookup book: {book_url.page}')
@@ -126,7 +124,7 @@ def main():
             print(f'download book: {book_url.file}')
 
             book_path = download_file(
-                book_info.book_url.file, book_info.make_book_name(), BOOK_PATH_DOWNLOADS, 'txt'
+                book_info.book_url.file, book_info.name, BOOK_PATH_DOWNLOADS, 'txt'
             )
 
             print(f'download image: {book_info.image_url}')
@@ -143,8 +141,28 @@ def main():
         except (HTTPError, RuntimeError) as e:
             print(e)
 
-        save_file(books_info)
+    return books_info
+
+
+def run_main(ids):
+    """
+    import run
+    :return:
+    """
+    prepare_dirs()
+    books_info = work_loop(ids)
+    save_file(books_info)
+
+
+def direct_run():
+    """
+    manual run
+    :return:
+    """
+    prepare_dirs()
+    books_info = work_loop(range(1, 11))
+    save_file(books_info)
 
 
 if __name__ == '__main__':
-    main()
+    direct_run()
