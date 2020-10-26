@@ -1,11 +1,12 @@
 #!/usr/bin/env python
+import argparse
 import re
 from typing import List
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
-from config import SCI_FI_URL, BASE_URL
+from config import SCI_FI_URL, BASE_URL, PAGES_LIMIT
 from tululu import make_request, run_main
 
 
@@ -34,9 +35,18 @@ def download_page_ids(books_url: str) -> List[str]:
     return [re.sub('[^0-9]', '', part_link) for part_link in links]
 
 
-def main(pages_limit=4):
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--start_page', help='Start page number for parse', type=int, required=True)
+    parser.add_argument('--end_page', help='End page number for parse', type=int, default=PAGES_LIMIT)
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+
     total_ids = list()
-    for page_no in range(1, pages_limit + 1):
+    for page_no in range(args.start_page, args.end_page):
         book_ids = download_page_ids(SCI_FI_URL.format(page=page_no))
         total_ids.extend(book_ids)
 

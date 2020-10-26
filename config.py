@@ -7,3 +7,5 @@ HEADER_SEPARATOR = '::'
 
 SCI_FI_URL = f'{BASE_URL}/l55/{{page}}'
 EXPORT_FILENAME = 'books_info.json'
+
+PAGES_LIMIT = 702
