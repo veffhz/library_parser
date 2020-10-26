@@ -92,7 +92,7 @@ def download_book_page(book_url: BookUrl) -> BookInfo:
 
 
 def prepare_dirs():
-    print(f'create download dirs if not exist\n')
+    print('create download dirs if not exist\n')
     os.makedirs(BOOK_PATH_DOWNLOADS, exist_ok=True)
     os.makedirs(IMAGE_PATH_DOWNLOADS, exist_ok=True)
 
