@@ -11,8 +11,8 @@ from requests import HTTPError
 from pathvalidate import sanitize_filename
 
 from helper import BookUrl, BookInfo
-from config import BOOK_PATH_DOWNLOADS, HEADER_SEPARATOR
-from config import IMAGE_PATH_DOWNLOADS, EXPORT_FILENAME
+from config import BOOK_PATH_DOWNLOADS, IMAGE_PATH_DOWNLOADS
+from config import JSON_PATH, SKIP_IMGS, SKIP_TXT, HEADER_SEPARATOR
 
 
 def extract_book_header(soup: BeautifulSoup) -> (str, str):
@@ -36,11 +36,11 @@ def extract_book_comments(soup: BeautifulSoup) -> List[str]:
             if div.select_one('span.black')]
 
 
-def combine_path(filename: str, path: str, extension: str = None):
+def combine_path(filename: str, path: str, extension: str = None) -> str:
     valid_filename = sanitize_filename(filename)
     if extension:
-        return pathlib.PurePath(path, f'{valid_filename}.{extension}')
-    return pathlib.PurePath(path, f'{valid_filename}')
+        return str(pathlib.PurePath(path, f'{valid_filename}.{extension}'))
+    return str(pathlib.PurePath(path, f'{valid_filename}'))
 
 
 def make_request(url):
@@ -54,16 +54,18 @@ def make_request(url):
     return response
 
 
-def download_file(url: str, filename: str, path: str, extension: str = None):
+def download_file(url: str, filename: str, path: str, extension: str = None) -> str:
+    print(f'begin download: {url}')
+
     response = make_request(url)
 
-    book_path = combine_path(filename, path, extension)
+    file_path = combine_path(filename, path, extension)
 
-    with open(book_path, 'wb') as file:
+    with open(file_path, 'wb') as file:
         file.write(response.content)
 
-    print(f'downloaded file: {book_path}')
-    return book_path
+    print(f'downloaded file to {file_path}')
+    return file_path
 
 
 def download_book_page(book_url: BookUrl) -> BookInfo:
@@ -96,7 +98,7 @@ def prepare_dirs():
 
 
 def save_file(books_info: List[dict]):
-    with open(EXPORT_FILENAME, 'w') as export_file:
+    with open(JSON_PATH, 'w') as export_file:
         json.dump(books_info, export_file, ensure_ascii=False, indent=4)
 
 
@@ -121,21 +123,18 @@ def work_loop(ids):
 
             book_info = download_book_page(book_url)
 
-            print(f'download book: {book_url.file}')
-
             book_path = download_file(
                 book_info.book_url.file, book_info.name, BOOK_PATH_DOWNLOADS, 'txt'
-            )
-
-            print(f'download image: {book_info.image_url}')
+            ) if not SKIP_TXT else ''
 
             img_src = download_file(
                 book_info.image_url, book_info.make_image_name(), IMAGE_PATH_DOWNLOADS
-            )
+            ) if not SKIP_IMGS else ''
 
             serialized_book = serialize_book_info(
-                book_info, str(book_path), str(img_src)
+                book_info, book_path, img_src
             )
+
             books_info.append(serialized_book)
 
         except (HTTPError, RuntimeError) as e:

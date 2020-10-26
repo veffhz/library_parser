@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import argparse
 import re
+import argparse
 from typing import List
 from urllib.parse import urljoin
 
@@ -17,6 +17,11 @@ def extract_book_links(soup: BeautifulSoup) -> List[str]:
 
 
 def download_page_links(books_url: str) -> List[str]:
+    """
+    Deprecated, not used
+    :param books_url:
+    :return:
+    """
     response = make_request(books_url)
 
     soup = BeautifulSoup(response.text, 'lxml')
