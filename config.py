@@ -8,7 +8,9 @@ IMAGE_PATH_DOWNLOADS = f'{DEST_FOLDER}/images'
 
 HEADER_SEPARATOR = '::'
 
-SCI_FI_URL = f'{BASE_URL}/l55/{{page}}'
+SCI_FI_ID = 55
+
+SCI_FI_URL = f'{BASE_URL}/l{SCI_FI_ID}/{{page}}'
 
 PAGES_LIMIT = 702
 

@@ -144,24 +144,6 @@ def work_loop(ids):
 
 
 def run_main(ids):
-    """
-    import run
-    :return:
-    """
     prepare_dirs()
     books_info = work_loop(ids)
     save_file(books_info)
-
-
-def direct_run():
-    """
-    manual run
-    :return:
-    """
-    prepare_dirs()
-    books_info = work_loop(range(1, 11))
-    save_file(books_info)
-
-
-if __name__ == '__main__':
-    direct_run()
