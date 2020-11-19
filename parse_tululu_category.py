@@ -6,7 +6,8 @@ from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
-from config import SCI_FI_URL, BASE_URL, PAGES_LIMIT, DEFAULT_DESTINATION_FOLDER
+from config import SCI_FI_URL, BASE_URL, PAGES_LIMIT
+from config import DEFAULT_DESTINATION_FOLDER, DEFAULT_JSON_PATH, DEFAULT_EXPORT_FILENAME
 from tululu import make_request, run_main
 
 
@@ -46,6 +47,10 @@ def parse_args():
     parser.add_argument('--end_page', help='End page number for parse', type=int, default=PAGES_LIMIT)
     parser.add_argument('--destination', help='Destination folder for download',
                         type=str, default=DEFAULT_DESTINATION_FOLDER)
+    parser.add_argument('--export_filename', help='Filename for json file with results',
+                        type=str, default=DEFAULT_EXPORT_FILENAME)
+    parser.add_argument('--json_path', help='Destination folder for save result',
+                        type=str, default=DEFAULT_JSON_PATH)
     parser.add_argument('--skip_imgs', default=False, action='store_true')
     parser.add_argument('--skip_txt', default=False, action='store_true')
     return parser.parse_args()
@@ -59,7 +64,12 @@ def main():
         book_ids = download_page_ids(SCI_FI_URL.format(page=page_no))
         total_ids.extend(book_ids)
 
-    run_main(total_ids, args.destination, args.skip_txt, args.skip_imgs)
+    json_path = f'{args.json_path}/{args.export_filename}'
+
+    run_main(
+        total_ids, args.destination, args.skip_txt,
+        args.skip_imgs, json_path
+    )
 
 
 if __name__ == '__main__':

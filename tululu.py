@@ -11,7 +11,7 @@ from requests import HTTPError
 from pathvalidate import sanitize_filename
 
 from config import BOOK_DOWNLOAD_URL, BASE_URL, BOOK_URL
-from config import JSON_PATH, HEADER_SEPARATOR
+from config import HEADER_SEPARATOR
 
 
 def extract_book_header(soup: BeautifulSoup) -> (str, str):
@@ -89,21 +89,22 @@ def download_book_page(page_url: str) -> dict:
     }
 
 
-def prepare_dirs(destination: str) -> dict:
+def prepare_dirs(destination: str, json_path: str) -> dict:
     print('create download dirs if not exist\n')
 
     books_path = f'{destination}/books'
     images_path = f'{destination}/images'
     os.makedirs(books_path, exist_ok=True)
     os.makedirs(images_path, exist_ok=True)
+    os.makedirs(os.path.dirname(json_path), exist_ok=True)
     return {
         'books_path': books_path,
         'images_path': images_path,
     }
 
 
-def save_file(books_info: List[dict]):
-    with open(JSON_PATH, 'w') as export_file:
+def save_file(books_info: List[dict], json_path: str) -> None:
+    with open(json_path, 'w') as export_file:
         json.dump(books_info, export_file, ensure_ascii=False, indent=4)
 
 
@@ -143,7 +144,8 @@ def work_loop(ids: list, paths: dict, skip_txt_download: bool, skip_images_downl
     return books_info
 
 
-def run_main(ids, destination: str, skip_txt_download: bool, skip_images_download: bool):
-    paths = prepare_dirs(destination)
+def run_main(ids, destination: str, skip_txt_download: bool,
+             skip_images_download: bool, json_path: str):
+    paths = prepare_dirs(destination, json_path)
     books_info = work_loop(ids, paths, skip_txt_download, skip_images_download)
-    save_file(books_info)
+    save_file(books_info, json_path)

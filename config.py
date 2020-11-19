@@ -11,5 +11,5 @@ SCI_FI_URL = f'{BASE_URL}/l{SCI_FI_ID}/{{page}}'
 
 PAGES_LIMIT = 702
 
-EXPORT_FILENAME = 'books_info.json'
-JSON_PATH = f'./{EXPORT_FILENAME}'
+DEFAULT_EXPORT_FILENAME = 'books_info.json'
+DEFAULT_JSON_PATH = '.'
