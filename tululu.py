@@ -142,10 +142,3 @@ def work_loop(book_ids: List[str], paths: dict, skip_txt_download: bool, skip_im
             print(e)
 
     return books_info
-
-
-def run_main(book_ids: List[str], destination: str, skip_txt_download: bool,
-             skip_images_download: bool, json_path: str) -> None:
-    paths = prepare_dirs(destination, json_path)
-    books_info = work_loop(book_ids, paths, skip_txt_download, skip_images_download)
-    save_file(books_info, json_path)
