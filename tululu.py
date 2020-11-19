@@ -11,7 +11,6 @@ from requests import HTTPError
 from pathvalidate import sanitize_filename
 
 from config import BOOK_DOWNLOAD_URL, BASE_URL, BOOK_URL
-from config import BOOK_PATH_DOWNLOADS, IMAGE_PATH_DOWNLOADS
 from config import JSON_PATH, SKIP_IMGS, SKIP_TXT, HEADER_SEPARATOR
 
 
@@ -90,10 +89,17 @@ def download_book_page(page_url: str) -> dict:
     }
 
 
-def prepare_dirs():
+def prepare_dirs(destination: str) -> dict:
     print('create download dirs if not exist\n')
-    os.makedirs(BOOK_PATH_DOWNLOADS, exist_ok=True)
-    os.makedirs(IMAGE_PATH_DOWNLOADS, exist_ok=True)
+
+    books_path = f'{destination}/books'
+    images_path = f'{destination}/images'
+    os.makedirs(books_path, exist_ok=True)
+    os.makedirs(images_path, exist_ok=True)
+    return {
+        'books_path': books_path,
+        'images_path': images_path,
+    }
 
 
 def save_file(books_info: List[dict]):
@@ -105,7 +111,7 @@ def make_image_name(image_url) -> str:
     return image_url.split('/')[-1]
 
 
-def work_loop(ids):
+def work_loop(ids: list, paths: dict):
     books_info = list()
 
     for book_id in ids:
@@ -118,13 +124,13 @@ def work_loop(ids):
             book_info = download_book_page(page_url)
 
             book_path = download_file(
-                file_url, book_info['title'], BOOK_PATH_DOWNLOADS, 'txt'
+                file_url, book_info['title'], paths['books_path'], 'txt'
             ) if not SKIP_TXT else ''
 
             book_info['book_path'] = book_path
 
             img_src = download_file(
-                book_info['image_url'], make_image_name(book_info['image_url']), IMAGE_PATH_DOWNLOADS
+                book_info['image_url'], make_image_name(book_info['image_url']), paths['images_path']
             ) if not SKIP_IMGS else ''
 
             book_info['img_src'] = img_src
@@ -137,7 +143,7 @@ def work_loop(ids):
     return books_info
 
 
-def run_main(ids):
-    prepare_dirs()
-    books_info = work_loop(ids)
+def run_main(ids, destination: str):
+    paths = prepare_dirs(destination)
+    books_info = work_loop(ids, paths)
     save_file(books_info)
