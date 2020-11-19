@@ -2,6 +2,7 @@
 import os
 import json
 import pathlib
+import uuid
 from typing import List
 from urllib.parse import urljoin
 
@@ -56,17 +57,23 @@ def extract_book_comments(soup: BeautifulSoup) -> List[str]:
             if div.select_one('span.black')]
 
 
+def get_id_prefix():
+    return str(uuid.uuid4())[:8]
+
+
 def combine_path(filename: str, path: str, extension: str = None) -> str:
     """
-    Combine path, filename and file extension
+    Combine path, filename and file extension with unique name
     :param filename: filename
     :param path: file path
     :param extension: file extension
     :return: Path to file
     """
     valid_filename = sanitize_filename(filename)
+    _id = get_id_prefix()
     if extension:
-        return str(pathlib.PurePath(path, f'{valid_filename}.{extension}'))
+        return str(pathlib.PurePath(path, f'{valid_filename}_{_id}.{extension}'))
+    valid_filename = valid_filename.replace('.', f'_{_id}.')
     return str(pathlib.PurePath(path, f'{valid_filename}'))
 
 
