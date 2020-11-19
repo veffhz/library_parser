@@ -46,6 +46,8 @@ def parse_args():
     parser.add_argument('--end_page', help='End page number for parse', type=int, default=PAGES_LIMIT)
     parser.add_argument('--destination', help='Destination folder for download',
                         type=str, default=DEFAULT_DESTINATION_FOLDER)
+    parser.add_argument('--skip_imgs', default=False, action='store_true')
+    parser.add_argument('--skip_txt', default=False, action='store_true')
     return parser.parse_args()
 
 
@@ -57,7 +59,7 @@ def main():
         book_ids = download_page_ids(SCI_FI_URL.format(page=page_no))
         total_ids.extend(book_ids)
 
-    run_main(total_ids, args.destination)
+    run_main(total_ids, args.destination, args.skip_txt, args.skip_imgs)
 
 
 if __name__ == '__main__':

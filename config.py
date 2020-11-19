@@ -13,6 +13,3 @@ PAGES_LIMIT = 702
 
 EXPORT_FILENAME = 'books_info.json'
 JSON_PATH = f'./{EXPORT_FILENAME}'
-
-SKIP_IMGS = False
-SKIP_TXT = False

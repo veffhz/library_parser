@@ -11,7 +11,7 @@ from requests import HTTPError
 from pathvalidate import sanitize_filename
 
 from config import BOOK_DOWNLOAD_URL, BASE_URL, BOOK_URL
-from config import JSON_PATH, SKIP_IMGS, SKIP_TXT, HEADER_SEPARATOR
+from config import JSON_PATH, HEADER_SEPARATOR
 
 
 def extract_book_header(soup: BeautifulSoup) -> (str, str):
@@ -111,7 +111,7 @@ def make_image_name(image_url) -> str:
     return image_url.split('/')[-1]
 
 
-def work_loop(ids: list, paths: dict):
+def work_loop(ids: list, paths: dict, skip_txt_download: bool, skip_images_download: bool):
     books_info = list()
 
     for book_id in ids:
@@ -125,13 +125,13 @@ def work_loop(ids: list, paths: dict):
 
             book_path = download_file(
                 file_url, book_info['title'], paths['books_path'], 'txt'
-            ) if not SKIP_TXT else ''
+            ) if not skip_txt_download else ''
 
             book_info['book_path'] = book_path
 
             img_src = download_file(
                 book_info['image_url'], make_image_name(book_info['image_url']), paths['images_path']
-            ) if not SKIP_IMGS else ''
+            ) if not skip_images_download else ''
 
             book_info['img_src'] = img_src
 
@@ -143,7 +143,7 @@ def work_loop(ids: list, paths: dict):
     return books_info
 
 
-def run_main(ids, destination: str):
+def run_main(ids, destination: str, skip_txt_download: bool, skip_images_download: bool):
     paths = prepare_dirs(destination)
-    books_info = work_loop(ids, paths)
+    books_info = work_loop(ids, paths, skip_txt_download, skip_images_download)
     save_file(books_info)
