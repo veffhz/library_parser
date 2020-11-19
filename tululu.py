@@ -95,8 +95,6 @@ def download_file(url: str, filename: str, path: str, extension: str = None) -> 
     :param extension: file extension to save file
     :return: downloaded file path
     """
-    print(f'begin download: {url}')
-
     response = make_request(url)
 
     file_path = combine_path(filename, path, extension)
@@ -104,7 +102,6 @@ def download_file(url: str, filename: str, path: str, extension: str = None) -> 
     with open(file_path, 'wb') as file:
         file.write(response.content)
 
-    print(f'downloaded file to {file_path}')
     return file_path
 
 
@@ -186,19 +183,27 @@ def download_books_list(book_ids: List[str], paths: dict, skip_txt_download: boo
 
             book_info = download_book_page(page_url)
 
-            book_path = download_file(
-                file_url, book_info['title'], paths['books_path'], 'txt'
-            ) if not skip_txt_download else ''
+            if not skip_txt_download:
+                print(f'begin download: {file_url}')
 
-            book_info['book_path'] = book_path
+                book_path = download_file(
+                    file_url, book_info['title'], paths['books_path'], 'txt'
+                )
 
-            image_filename = book_info['image_url'].split('/')[-1]
+                print(f'downloaded file to {book_path}')
+                book_info['book_path'] = book_path
 
-            img_src = download_file(
-                book_info['image_url'], image_filename, paths['images_path']
-            ) if not skip_images_download else ''
+            if not skip_images_download:
+                image_filename = book_info['image_url'].split('/')[-1]
 
-            book_info['img_src'] = img_src
+                print(f'begin download: {book_info["image_url"]}')
+
+                img_src = download_file(
+                    book_info['image_url'], image_filename, paths['images_path']
+                )
+
+                print(f'downloaded file to {img_src}')
+                book_info['img_src'] = img_src
 
             books_info.append(book_info)
 
