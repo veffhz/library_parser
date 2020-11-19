@@ -12,6 +12,7 @@ from pathvalidate import sanitize_filename
 
 from config import BOOK_DOWNLOAD_URL, BASE_URL, BOOK_URL
 from config import HEADER_SEPARATOR
+from exceptions import RedirectReceivedError
 
 
 def extract_book_header(soup: BeautifulSoup) -> (str, str):
@@ -80,8 +81,7 @@ def make_request(url: str, verify_ssl: bool = False) -> Response:
     response.raise_for_status()
 
     if response.is_redirect or response.is_permanent_redirect:
-        print(f'redirect found: code {response.status_code}, stop.', )
-        raise RuntimeError()
+        raise RedirectReceivedError(response.status_code)
 
     return response
 
@@ -202,7 +202,7 @@ def download_books_list(book_ids: List[str], paths: dict, skip_txt_download: boo
 
             books_info.append(book_info)
 
-        except (HTTPError, RuntimeError) as e:
+        except (HTTPError, RedirectReceivedError) as e:
             print(e)
 
     return books_info
