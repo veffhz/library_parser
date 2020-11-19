@@ -2,37 +2,31 @@
 import re
 import argparse
 from typing import List
-from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
-from config import SCI_FI_URL, BASE_URL, PAGES_LIMIT
+from config import SCI_FI_URL, PAGES_LIMIT
 from config import DEFAULT_DESTINATION_FOLDER, DEFAULT_JSON_PATH, DEFAULT_EXPORT_FILENAME
 from tululu import make_request, prepare_dirs, work_loop, save_file
 
 
 def extract_book_links(soup: BeautifulSoup) -> List[str]:
+    """
+    Extract a tags from page html
+    :param soup: BeautifulSoup instance
+    :return: List of books urls
+    """
     divs = soup.select('div.bookimage')
     return [div.select_one('a')['href'] for div in divs
             if div.select_one('a')]
 
 
-def download_page_links(books_url: str) -> List[str]:
-    """
-    Deprecated, not used
-    :param books_url:
-    :return:
-    """
-    response = make_request(books_url)
-
-    soup = BeautifulSoup(response.text, 'lxml')
-
-    links = extract_book_links(soup)
-
-    return [urljoin(BASE_URL, link) for link in links]
-
-
 def download_page_ids(books_url: str) -> List[str]:
+    """
+    Download books id's from books url
+    :param books_url: Book url
+    :return: List of books ids
+    """
     response = make_request(books_url)
 
     soup = BeautifulSoup(response.text, 'lxml')
@@ -41,7 +35,11 @@ def download_page_ids(books_url: str) -> List[str]:
     return [re.sub(r'[^0-9]', '', link) for link in links]
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
+    """
+    Parse script arguments
+    :return: namespace instance with args attributes
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('--start_page', help='Start page number for parse', type=int, required=True)
     parser.add_argument('--end_page', help='End page number for parse', type=int, default=PAGES_LIMIT)
