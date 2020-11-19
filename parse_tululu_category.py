@@ -60,8 +60,8 @@ def main():
     args = parse_args()
 
     total_book_ids = list()
-    for page_no in range(args.start_page, args.end_page):
-        book_ids = download_page_ids(SCI_FI_URL.format(page=page_no))
+    for page_number in range(args.start_page, args.end_page):
+        book_ids = download_page_ids(SCI_FI_URL.format(page=page_number))
         total_book_ids.extend(book_ids)
 
     json_path = f'{args.json_path}/{args.export_filename}'
