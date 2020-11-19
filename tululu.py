@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from requests import HTTPError
 from pathvalidate import sanitize_filename
 
-from helper import BookUrl, BookInfo
+from config import BOOK_DOWNLOAD_URL, BASE_URL, BOOK_URL
 from config import BOOK_PATH_DOWNLOADS, IMAGE_PATH_DOWNLOADS
 from config import JSON_PATH, SKIP_IMGS, SKIP_TXT, HEADER_SEPARATOR
 
@@ -44,7 +44,7 @@ def combine_path(filename: str, path: str, extension: str = None) -> str:
 
 
 def make_request(url):
-    response = requests.get(url, allow_redirects=False)
+    response = requests.get(url, allow_redirects=False, verify=False)
     response.raise_for_status()
 
     if response.is_redirect or response.is_permanent_redirect:
@@ -68,27 +68,26 @@ def download_file(url: str, filename: str, path: str, extension: str = None) -> 
     return file_path
 
 
-def download_book_page(book_url: BookUrl) -> BookInfo:
-    response = make_request(book_url.page)
+def download_book_page(page_url: str) -> dict:
+    response = make_request(page_url)
 
     soup = BeautifulSoup(response.text, 'lxml')
 
     book_name, book_author = extract_book_header(soup)
     image_part_url = extract_book_image(soup)
 
-    image_url = urljoin(book_url.page, image_part_url)
+    image_url = urljoin(page_url, image_part_url)
 
     comments = extract_book_comments(soup)
     genres = extract_book_genres(soup)
 
-    return BookInfo(
-        book_name.strip(),
-        book_author.strip(),
-        book_url,
-        image_url,
-        comments,
-        genres
-    )
+    return {
+        'title': book_name.strip(),
+        'book_author': book_author.strip(),
+        'image_url': image_url,
+        'comments': comments,
+        'genres': genres
+    }
 
 
 def prepare_dirs():
@@ -102,40 +101,35 @@ def save_file(books_info: List[dict]):
         json.dump(books_info, export_file, ensure_ascii=False, indent=4)
 
 
-def serialize_book_info(book_info: BookInfo, book_path: str, img_src: str) -> dict:
-    return {
-        'title': book_info.name,
-        'author': book_info.author,
-        'img_src': img_src,
-        'book_path': book_path,
-        'comments': book_info.comments,
-        'genres': book_info.genres,
-    }
+def make_image_name(image_url) -> str:
+    return image_url.split('/')[-1]
 
 
 def work_loop(ids):
     books_info = list()
 
-    for no in ids:
-        book_url = BookUrl(no)
-        try:
-            print(f'\ntry lookup book: {book_url.page}')
+    for book_id in ids:
+        page_url = BOOK_URL.format(BASE_URL, book_id)
+        file_url = BOOK_DOWNLOAD_URL.format(BASE_URL, book_id)
 
-            book_info = download_book_page(book_url)
+        try:
+            print(f'\ntry lookup book: {page_url}')
+
+            book_info = download_book_page(page_url)
 
             book_path = download_file(
-                book_info.book_url.file, book_info.name, BOOK_PATH_DOWNLOADS, 'txt'
+                file_url, book_info['title'], BOOK_PATH_DOWNLOADS, 'txt'
             ) if not SKIP_TXT else ''
 
+            book_info['book_path'] = book_path
+
             img_src = download_file(
-                book_info.image_url, book_info.make_image_name(), IMAGE_PATH_DOWNLOADS
+                book_info['image_url'], make_image_name(book_info['image_url']), IMAGE_PATH_DOWNLOADS
             ) if not SKIP_IMGS else ''
 
-            serialized_book = serialize_book_info(
-                book_info, book_path, img_src
-            )
+            book_info['img_src'] = img_src
 
-            books_info.append(serialized_book)
+            books_info.append(book_info)
 
         except (HTTPError, RuntimeError) as e:
             print(e)
