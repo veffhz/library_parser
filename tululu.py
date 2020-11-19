@@ -112,10 +112,10 @@ def make_image_name(image_url) -> str:
     return image_url.split('/')[-1]
 
 
-def work_loop(ids: list, paths: dict, skip_txt_download: bool, skip_images_download: bool):
+def work_loop(book_ids: List[str], paths: dict, skip_txt_download: bool, skip_images_download: bool):
     books_info = list()
 
-    for book_id in ids:
+    for book_id in book_ids:
         page_url = BOOK_URL.format(BASE_URL, book_id)
         file_url = BOOK_DOWNLOAD_URL.format(BASE_URL, book_id)
 
@@ -144,8 +144,8 @@ def work_loop(ids: list, paths: dict, skip_txt_download: bool, skip_images_downl
     return books_info
 
 
-def run_main(ids, destination: str, skip_txt_download: bool,
-             skip_images_download: bool, json_path: str):
+def run_main(book_ids: List[str], destination: str, skip_txt_download: bool,
+             skip_images_download: bool, json_path: str) -> None:
     paths = prepare_dirs(destination, json_path)
-    books_info = work_loop(ids, paths, skip_txt_download, skip_images_download)
+    books_info = work_loop(book_ids, paths, skip_txt_download, skip_images_download)
     save_file(books_info, json_path)

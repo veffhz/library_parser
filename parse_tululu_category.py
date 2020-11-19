@@ -29,7 +29,7 @@ def download_page_links(books_url: str) -> List[str]:
 
     links = extract_book_links(soup)
 
-    return [urljoin(BASE_URL, part_link) for part_link in links]
+    return [urljoin(BASE_URL, link) for link in links]
 
 
 def download_page_ids(books_url: str) -> List[str]:
@@ -38,7 +38,7 @@ def download_page_ids(books_url: str) -> List[str]:
     soup = BeautifulSoup(response.text, 'lxml')
 
     links = extract_book_links(soup)
-    return [re.sub('[^0-9]', '', part_link) for part_link in links]
+    return [re.sub('[^0-9]', '', link) for link in links]
 
 
 def parse_args():
@@ -59,15 +59,15 @@ def parse_args():
 def main():
     args = parse_args()
 
-    total_ids = list()
+    total_book_ids = list()
     for page_no in range(args.start_page, args.end_page):
         book_ids = download_page_ids(SCI_FI_URL.format(page=page_no))
-        total_ids.extend(book_ids)
+        total_book_ids.extend(book_ids)
 
     json_path = f'{args.json_path}/{args.export_filename}'
 
     run_main(
-        total_ids, args.destination, args.skip_txt,
+        total_book_ids, args.destination, args.skip_txt,
         args.skip_imgs, json_path
     )
 
