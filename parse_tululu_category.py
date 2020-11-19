@@ -38,7 +38,7 @@ def download_page_ids(books_url: str) -> List[str]:
     soup = BeautifulSoup(response.text, 'lxml')
 
     links = extract_book_links(soup)
-    return [re.sub('[^0-9]', '', link) for link in links]
+    return [re.sub(r'[^0-9]', '', link) for link in links]
 
 
 def parse_args():
