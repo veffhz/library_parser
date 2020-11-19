@@ -166,7 +166,7 @@ def save_file(books_info: List[dict], json_path: str) -> None:
         json.dump(books_info, export_file, ensure_ascii=False, indent=4)
 
 
-def work_loop(book_ids: List[str], paths: dict, skip_txt_download: bool, skip_images_download: bool) -> List[dict]:
+def download_books_list(book_ids: List[str], paths: dict, skip_txt_download: bool, skip_images_download: bool) -> List[dict]:
     """
     Iterate by books ids and download
     :param book_ids: List of books ids

@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 from config import SCI_FI_URL, PAGES_LIMIT
 from config import DEFAULT_DESTINATION_FOLDER, DEFAULT_JSON_PATH, DEFAULT_EXPORT_FILENAME
-from tululu import make_request, prepare_dirs, work_loop, save_file
+from tululu import make_request, prepare_dirs, download_books_list, save_file
 
 
 def extract_book_links(soup: BeautifulSoup) -> List[str]:
@@ -65,7 +65,7 @@ def main():
     json_path = f'{args.json_path}/{args.export_filename}'
 
     paths = prepare_dirs(args.destination, json_path)
-    books_info = work_loop(total_book_ids, paths, args.skip_txt, args.skip_imgs)
+    books_info = download_books_list(total_book_ids, paths, args.skip_txt, args.skip_imgs)
     save_file(books_info, json_path)
 
 
