@@ -11,21 +11,13 @@ from tululu import make_request, prepare_dirs, download_books_list, save_file
 
 
 def extract_book_links(soup: BeautifulSoup) -> List[str]:
-    """
-    Extract a tags from page html
-    :param soup: BeautifulSoup instance
-    :return: List of books urls
-    """
+    """Extract a tags from page html."""
     links = soup.select('div.bookimage > a:first-of-type')
     return [link['href'] for link in links]
 
 
 def download_page_ids(books_url: str) -> List[str]:
-    """
-    Download books id's from books url
-    :param books_url: Book url
-    :return: List of books ids
-    """
+    """Download books id's from books url."""
     response = make_request(books_url)
 
     soup = BeautifulSoup(response.text, 'lxml')
@@ -35,10 +27,7 @@ def download_page_ids(books_url: str) -> List[str]:
 
 
 def parse_args() -> argparse.Namespace:
-    """
-    Parse script arguments
-    :return: namespace instance with args attributes
-    """
+    """Parse script arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument('--start_page', help='Start page number for parse', type=int, required=True)
     parser.add_argument('--end_page', help='End page number for parse', type=int, default=PAGES_LIMIT)

@@ -16,57 +16,36 @@ from exceptions import RedirectReceivedError
 
 
 def extract_book_header(soup: BeautifulSoup) -> (str, str):
-    """
-    Extract book title from html
-    :param soup: BeautifulSoup instance
-    :return: Tuple of title headers
-    """
+    """Extract book title from html."""
     h1 = soup.select_one('div#content>h1')
     return h1.text.split(HEADER_SEPARATOR)
 
 
 def extract_book_image_url(soup: BeautifulSoup) -> str:
-    """
-    Extract book image from html
-    :param soup: BeautifulSoup instance
-    :return: Book image url
-    """
+    """Extract book image from html."""
     img = soup.select_one('div.bookimage img')
     return img['src']
 
 
 def extract_book_genres(soup: BeautifulSoup) -> List[str]:
-    """
-    Extract book genres from html
-    :param soup: BeautifulSoup instance
-    :return: List of book's genres
-    """
+    """Extract book genres from html."""
     a_tags = soup.select('span.d_book a')
     return [a.text for a in a_tags]
 
 
 def extract_book_comments(soup: BeautifulSoup) -> List[str]:
-    """
-    Extract book comments from html
-    :param soup: BeautifulSoup instance
-    :return: List of book's comments
-    """
+    """Extract book comments from html."""
     spans = soup.select('div.texts > span.black:first-of-type')
     return [span.text for span in spans]
 
 
 def get_id_prefix():
+    """Generate a random 8 symbols ID."""
     return str(uuid.uuid4())[:8]
 
 
 def combine_path(filename: str, path: str, extension: str = None) -> str:
-    """
-    Combine path, filename and file extension with unique name
-    :param filename: filename
-    :param path: file path
-    :param extension: file extension
-    :return: Path to file
-    """
+    """Combine path, filename and file extension with unique name."""
     valid_filename = sanitize_filename(filename)
     _id = get_id_prefix()
     if extension:
@@ -83,12 +62,7 @@ def combine_path(filename: str, path: str, extension: str = None) -> str:
 
 
 def make_request(url: str, verify_ssl: bool = False) -> Response:
-    """
-    Get request to url and return response, if if status ok
-    :param url: url to make request
-    :param verify_ssl: Flag to check https
-    :return: Response instance
-    """
+    """Get request to url and return response, if if status ok."""
     response = requests.get(url, allow_redirects=False, verify=verify_ssl)
     response.raise_for_status()
 
@@ -99,14 +73,7 @@ def make_request(url: str, verify_ssl: bool = False) -> Response:
 
 
 def download_file(url: str, filename: str, path: str, extension: str = None) -> str:
-    """
-    Download file with specified params
-    :param url: url to download
-    :param filename: file name to save file
-    :param path: path to save file
-    :param extension: file extension to save file
-    :return: downloaded file path
-    """
+    """Download file with specified params"""
     response = make_request(url)
 
     file_path = combine_path(filename, path, extension)
@@ -118,11 +85,7 @@ def download_file(url: str, filename: str, path: str, extension: str = None) -> 
 
 
 def download_book_page(page_url: str) -> dict:
-    """
-    Download html with book title, author, image, comments and genres
-    :param page_url: url of book page
-    :return: Dict with book info {'title': '', 'book_author': '', 'image_url': '', 'comments': '','genres': ''}
-    """
+    """Download html with book title, author, image, comments and genres."""
     response = make_request(page_url)
 
     soup = BeautifulSoup(response.text, 'lxml')
@@ -145,12 +108,7 @@ def download_book_page(page_url: str) -> dict:
 
 
 def prepare_dirs(destination: str, json_path: str) -> dict:
-    """
-    Create destination and json path dirs
-    :param destination: Path to save books files
-    :param json_path: Path to save json file
-    :return:
-    """
+    """Create destination and json path dirs."""
     print('create download dirs if not exist\n')
 
     books_path = f'{destination}/books'
@@ -165,25 +123,13 @@ def prepare_dirs(destination: str, json_path: str) -> dict:
 
 
 def save_file(books: List[dict], json_path: str) -> None:
-    """
-    Save list of books info to json file
-    :param books: List of books info
-    :param json_path: Path to save json file
-    :return:
-    """
+    """Save list of books info to json file."""
     with open(json_path, 'w') as export_file:
         json.dump(books, export_file, ensure_ascii=False, indent=4)
 
 
 def download_books_list(book_ids: List[str], paths: dict, skip_txt_download: bool, skip_images_download: bool) -> List[dict]:
-    """
-    Iterate by books ids and download
-    :param book_ids: List of books ids
-    :param paths: Dict with paths for download files
-    :param skip_txt_download: Flag for skip download txt files
-    :param skip_images_download: Flag for skip download image files
-    :return: Result list of downloaded books info
-    """
+    """Iterate by books ids and download."""
     books = list()
 
     for book_id in book_ids:
