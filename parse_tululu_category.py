@@ -65,8 +65,8 @@ def main():
     json_path = f'{args.json_path}/{args.export_filename}'
 
     paths = prepare_dirs(args.destination, json_path)
-    books_info = download_books_list(total_book_ids, paths, args.skip_txt, args.skip_imgs)
-    save_file(books_info, json_path)
+    books = download_books_list(total_book_ids, paths, args.skip_txt, args.skip_imgs)
+    save_file(books, json_path)
 
 
 if __name__ == '__main__':

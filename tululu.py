@@ -165,15 +165,15 @@ def prepare_dirs(destination: str, json_path: str) -> dict:
     }
 
 
-def save_file(books_info: List[dict], json_path: str) -> None:
+def save_file(books: List[dict], json_path: str) -> None:
     """
     Save list of books info to json file
-    :param books_info: List of books info
+    :param books: List of books info
     :param json_path: Path to save json file
     :return:
     """
     with open(json_path, 'w') as export_file:
-        json.dump(books_info, export_file, ensure_ascii=False, indent=4)
+        json.dump(books, export_file, ensure_ascii=False, indent=4)
 
 
 def download_books_list(book_ids: List[str], paths: dict, skip_txt_download: bool, skip_images_download: bool) -> List[dict]:
@@ -185,7 +185,7 @@ def download_books_list(book_ids: List[str], paths: dict, skip_txt_download: boo
     :param skip_images_download: Flag for skip download image files
     :return: Result list of downloaded books info
     """
-    books_info = list()
+    books = list()
 
     for book_id in book_ids:
         page_url = BOOK_URL.format(BASE_URL, book_id)
@@ -194,33 +194,33 @@ def download_books_list(book_ids: List[str], paths: dict, skip_txt_download: boo
         try:
             print(f'\ntry lookup book: {page_url}')
 
-            book_info = download_book_page(page_url)
+            book = download_book_page(page_url)
 
             if not skip_txt_download:
                 print(f'begin download: {file_url}')
 
                 book_path = download_file(
-                    file_url, book_info['title'], paths['books_path'], 'txt'
+                    file_url, book['title'], paths['books_path'], 'txt'
                 )
 
                 print(f'downloaded file to {book_path}')
-                book_info['book_path'] = book_path
+                book['book_path'] = book_path
 
             if not skip_images_download:
-                image_filename = book_info['image_url'].split('/')[-1]
+                image_filename = book['image_url'].split('/')[-1]
 
-                print(f'begin download: {book_info["image_url"]}')
+                print(f'begin download: {book["image_url"]}')
 
                 img_src = download_file(
-                    book_info['image_url'], image_filename, paths['images_path']
+                    book['image_url'], image_filename, paths['images_path']
                 )
 
                 print(f'downloaded file to {img_src}')
-                book_info['img_src'] = img_src
+                book['img_src'] = img_src
 
-            books_info.append(book_info)
+            books.append(book)
 
         except (HTTPError, RedirectReceivedError) as e:
             print(e)
 
-    return books_info
+    return books
