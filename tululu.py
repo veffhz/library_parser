@@ -109,8 +109,6 @@ def download_book_page(page_url: str) -> dict:
 
 def prepare_dirs(destination: str, json_path: str) -> dict:
     """Create destination and json path dirs."""
-    print('create download dirs if not exist\n')
-
     books_path = f'{destination}/books'
     images_path = f'{destination}/images'
     os.makedirs(books_path, exist_ok=True)
