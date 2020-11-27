@@ -51,9 +51,8 @@ def extract_book_comments(soup: BeautifulSoup) -> List[str]:
     :param soup: BeautifulSoup instance
     :return: List of book's comments
     """
-    divs = soup.select('div.texts')
-    return [div.select_one('span.black').text for div in divs
-            if div.select_one('span.black')]
+    spans = soup.select('div.texts > span.black:first-of-type')
+    return [span.text for span in spans]
 
 
 def get_id_prefix():

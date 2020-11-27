@@ -16,9 +16,8 @@ def extract_book_links(soup: BeautifulSoup) -> List[str]:
     :param soup: BeautifulSoup instance
     :return: List of books urls
     """
-    divs = soup.select('div.bookimage')
-    return [div.select_one('a')['href'] for div in divs
-            if div.select_one('a')]
+    links = soup.select('div.bookimage > a:first-of-type')
+    return [link['href'] for link in links]
 
 
 def download_page_ids(books_url: str) -> List[str]:
