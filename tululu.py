@@ -72,8 +72,15 @@ def combine_path(filename: str, path: str, extension: str = None) -> str:
     _id = get_id_prefix()
     if extension:
         return str(pathlib.PurePath(path, f'{valid_filename}_{_id}.{extension}'))
-    valid_filename = valid_filename.replace('.', f'_{_id}.')
-    return str(pathlib.PurePath(path, f'{valid_filename}'))
+
+    dot_position = valid_filename.rfind('.')
+    valid_filename = (
+        f'{valid_filename[:dot_position]}'
+        f'_{_id}.'
+        f'{valid_filename[dot_position + 1:]}'
+    )
+
+    return str(pathlib.PurePath(path, valid_filename))
 
 
 def make_request(url: str, verify_ssl: bool = False) -> Response:
