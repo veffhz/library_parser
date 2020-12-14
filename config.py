@@ -1,4 +1,4 @@
-DEFAULT_DESTINATION_FOLDER = './result'
+DEFAULT_DESTINATION_FOLDER = './books_content'
 BASE_URL = 'https://tululu.org'
 BOOK_URL = '{}/b{}/'
 BOOK_DOWNLOAD_URL = '{}/txt.php?id={}/'

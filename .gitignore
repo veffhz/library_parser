@@ -131,6 +131,5 @@ dmypy.json
 .idea/
 *.db
 media/
-books/
-images/
+books_content/
 *.json
